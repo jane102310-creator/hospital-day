@@ -110,16 +110,14 @@
         <!-- VIEW 2: MONTHLY MATRIX TABLE -->
         <div id="view-monthly" class="hidden space-y-6">
             <div class="cream-card rounded-2xl p-4 overflow-x-auto">
-                <div class="min-w-[1000px]">
+                <div class="min-w-[1200px]">
                     <div class="text-sm font-bold text-accentDark mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-table text-amber-600"></span></i> 11511 護理人員 11 月整月班表總覽
+                        <i class="fa-solid fa-table text-amber-600"></i> 11511 護理人員 11 月整月班表總覽
                     </div>
                     <table class="w-full border-collapse text-xs">
                         <thead>
-                            <tr class="bg-cream-100 text-stone-700 border-b border-cream-300">
-                                <th class="p-2.5 text-left sticky left-0 bg-cream-100 z-10 w-24">姓名</th>
-                                <th class="p-2.5 text-left w-16">職編</th>
-                                ${Array.from({length: 30}, (_, i) => `<th class="p-1.5 text-center w-10 font-mono">${i+1}</th>`).join('')}
+                            <tr id="monthlyTableHeader" class="bg-cream-100 text-stone-700 border-b border-cream-300">
+                                <!-- Dynamic JS render date 1..30 -->
                             </tr>
                         </thead>
                         <tbody id="monthlyTableBody">
@@ -309,13 +307,22 @@
 
         function renderMonthlyView() {
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const headerRow = document.getElementById('monthlyTableHeader');
             const tbody = document.getElementById('monthlyTableBody');
             const filteredStaff = staffData.filter(s => !query || s.name.toLowerCase().includes(query) || s.id.includes(query));
 
+            // 生成 1 ~ 30 日標題列
+            let headerHtml = `<th class="p-2.5 text-left sticky left-0 bg-cream-100 z-10 w-24">姓名</th><th class="p-2.5 text-left w-16">職編</th>`;
+            for (let i = 1; i <= 30; i++) {
+                headerHtml += `<th class="p-1.5 text-center w-10 font-mono">${i}日</th>`;
+            }
+            headerRow.innerHTML = headerHtml;
+
+            // 生成每位護理師月班表
             tbody.innerHTML = filteredStaff.map(staff => `
                 <tr class="border-b border-cream-200 hover:bg-cream-50 transition">
                     <td class="p-2.5 font-bold text-accentDark sticky left-0 bg-white z-10 whitespace-nowrap shadow-sm">${staff.name}</td>
-                    <td class="p-2.5 text-stone-500 font-mono">${staff.id}</td>
+                    <td class="p-2.5 text-stone-500 font-mono text-xs">${staff.id}</td>
                     ${staff.schedule.map(shift => {
                         const cat = getShiftCategory(shift);
                         let bg = 'bg-stone-50 text-stone-600';
