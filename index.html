@@ -112,7 +112,7 @@
             <div class="cream-card rounded-2xl p-4 overflow-x-auto">
                 <div class="min-w-[1200px]">
                     <div class="text-sm font-bold text-accentDark mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-table text-amber-600"></i> 11511 護理人員 11 月整月班表總覽（週末假日特別標示）
+                        <i class="fa-solid fa-table text-amber-600"></i> 11511 護理人員 11 月整月班表總覽（1號起算星期日）
                     </div>
                     <table class="w-full border-collapse text-xs">
                         <thead>
@@ -191,7 +191,6 @@
     </main>
 
     <script>
-        // 依據原始 EXCEL 截圖完整正確核對的 11/1 ~ 11/30 護理人員班表資料集
         const staffData = [
             { id: "800078", name: "黃美琴", schedule: ["FF","85","85","85","85","85","WW","FF","85","85","85","85","85","WW","FF","85","85","85","85","85","WW","FF","85","85","85","85","85","WW","FF","85"] },
             { id: "930216", name: "張邇寧", schedule: ["FF","8-4' L","8-4' L","WW","8-4' L","8-4' L","8-4' L","FF","8-4' L","8-4' L","8-4' L","8-4' L","8-4' L","WW","FF","8-4' L","8-4' L","8-4' L","8-4' L","8-4' L","WW","FF","8-4' L","8-4' L","8-4' L","8-4' L","8-4' L","WW","FF","8-4' L"] },
@@ -211,6 +210,8 @@
             { id: "1150192", name: "王嘉儷", schedule: ["FF","9'-6 (15.16)","9'-6 (15.16)","9'-6 加","9'-6 加","9'-6 加","WW","FF","8-5","8-5","8-5","8-5","8-5","9-4 (15.16)","10-6' (15.16)","10-6' (15.16)","10-6' (15.16)","10-6' (15.16)","WW","WW","FF","加","10-6' 加","W+ WW","9-5' (12.13)","9-5' (12.13)","9-5' 點","WW","FF","9-5' (8.9)"] },
             { id: "1150194", name: "李欣容", schedule: ["FF","9'-6 加","9'-6 加","9'-6 (15.16)","9'-6 (15.16)","W+ 9'-6 (15.16)","9-5'","FF","WW","SS調移","WW","WW","WW","8-5","8-5","8-5","10-6' (15.16)","10-6' (15.16)","10-6' (15.16)","10-6' (15.16)","WW","FF","8-5","8-5","8-5","10-6' (15.16)","10-6' (15.16)","WW","FF","8-4' (10.11)"] }
         ];
+
+        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
         function getShiftCategory(code) {
             if (!code) return 'off';
@@ -308,12 +309,10 @@
             const tbody = document.getElementById('monthlyTableBody');
             const filteredStaff = staffData.filter(s => !query || s.name.toLowerCase().includes(query) || s.id.includes(query));
 
-            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-
             let headerHtml = `<th class="p-2.5 text-left sticky left-0 bg-cream-100 z-10 w-24">姓名</th><th class="p-2.5 text-left w-16">職編</th>`;
             for (let i = 1; i <= 30; i++) {
-                const d = new Date(2025, 10, i);
-                const w = d.getDay();
+                // 1日對應星期日 (index 0)，依序循環
+                const w = (i - 1) % 7;
                 const isWeekend = (w === 0 || w === 6);
                 const thBg = isWeekend ? 'bg-amber-100/80 text-amber-900 font-bold' : 'text-stone-700';
                 headerHtml += `<th class="p-1.5 text-center w-11 font-mono ${thBg}"><div class="text-[10px] opacity-70">${weekdays[w]}</div><div>${i}</div></th>`;
@@ -325,8 +324,8 @@
                     <td class="p-2.5 font-bold text-accentDark sticky left-0 bg-white z-10 whitespace-nowrap shadow-sm">${staff.name}</td>
                     <td class="p-2.5 text-stone-500 font-mono text-xs">${staff.id}</td>
                     ${staff.schedule.map((shift, idx) => {
-                        const d = new Date(2025, 10, idx + 1);
-                        const w = d.getDay();
+                        const i = idx + 1;
+                        const w = (i - 1) % 7;
                         const isWeekend = (w === 0 || w === 6);
                         
                         const cat = getShiftCategory(shift);
@@ -357,11 +356,11 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-center text-xs">
-                        ${['日','一','二','三','四','五','六'].map((d, i) => `<div class="font-semibold ${i===0||i===6?'text-amber-700':'text-stone-400'} py-1">${d}</div>`).join('')}
-                        <div></div><div></div><div></div><div></div><div></div>
+                        ${weekdays.map((d, i) => `<div class="font-semibold ${i===0||i===6?'text-amber-700':'text-stone-400'} py-1">${d}</div>`).join('')}
+                        <!-- 11/1 是星期日 (index 0)，前面不需空白格 -->
                         ${staff.schedule.map((shift, idx) => {
-                            const d = new Date(2025, 10, idx + 1);
-                            const w = d.getDay();
+                            const i = idx + 1;
+                            const w = (i - 1) % 7;
                             const isWeekend = (w === 0 || w === 6);
 
                             const cat = getShiftCategory(shift);
@@ -371,7 +370,7 @@
                             if (cat === 'night') bg = 'bg-indigo-100 text-indigo-900 font-medium';
                             return `
                                 <div class="p-1 rounded ${bg} flex flex-col justify-between h-10 border border-black/5">
-                                    <span class="text-[9px] opacity-60 text-left">${idx + 1}</span>
+                                    <span class="text-[9px] opacity-60 text-left">${i}</span>
                                     <span class="text-[10px] truncate font-mono">${shift}</span>
                                 </div>
                             `;
