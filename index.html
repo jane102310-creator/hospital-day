@@ -44,8 +44,8 @@
 <body class="min-h-screen pb-12">
 
     <!-- Header Section -->
-    <header class="bg-white/80 backdrop-blur border-b border-cream-200 sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <header class="bg-white/85 backdrop-blur border-b border-cream-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
                     <i class="fa-solid fa-user-nurse"></i>
@@ -65,22 +65,25 @@
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="max-w-5xl mx-auto px-4 mt-2">
-            <div class="flex space-x-2 border-b border-cream-200">
-                <button id="tab-daily" onclick="switchTab('daily')" class="py-2.5 px-4 font-semibold text-sm border-b-2 border-amber-600 text-amber-800 flex items-center gap-2">
+        <div class="max-w-6xl mx-auto px-4 mt-2">
+            <div class="flex space-x-2 border-b border-cream-200 overflow-x-auto">
+                <button id="tab-daily" onclick="switchTab('daily')" class="py-2.5 px-4 font-semibold text-sm border-b-2 border-amber-600 text-amber-800 flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-calendar-day"></i> 每日班表
                 </button>
-                <button id="tab-personal" onclick="switchTab('personal')" class="py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2">
+                <button id="tab-monthly" onclick="switchTab('monthly')" class="py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-table-cells"></i> 月班表
+                </button>
+                <button id="tab-personal" onclick="switchTab('personal')" class="py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-id-card"></i> 個人班表
                 </button>
-                <button id="tab-legend" onclick="switchTab('legend')" class="py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2">
+                <button id="tab-legend" onclick="switchTab('legend')" class="py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-book"></i> 班別代碼
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 mt-6">
+    <main class="max-w-6xl mx-auto px-4 mt-6">
 
         <!-- Controls: Search & Filter -->
         <div class="cream-card p-4 rounded-2xl mb-6 flex flex-col sm:flex-row gap-3 justify-between items-center">
@@ -101,19 +104,38 @@
 
         <!-- VIEW 1: DAILY ROSTER -->
         <div id="view-daily" class="space-y-6">
-            <div id="dailyShiftContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Dynamic Content Load -->
+            <div id="dailyShiftContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- VIEW 2: MONTHLY MATRIX TABLE -->
+        <div id="view-monthly" class="hidden space-y-6">
+            <div class="cream-card rounded-2xl p-4 overflow-x-auto">
+                <div class="min-w-[1000px]">
+                    <div class="text-sm font-bold text-accentDark mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-table text-amber-600"></span></i> 11511 護理人員 11 月整月班表總覽
+                    </div>
+                    <table class="w-full border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-cream-100 text-stone-700 border-b border-cream-300">
+                                <th class="p-2.5 text-left sticky left-0 bg-cream-100 z-10 w-24">姓名</th>
+                                <th class="p-2.5 text-left w-16">職編</th>
+                                ${Array.from({length: 30}, (_, i) => `<th class="p-1.5 text-center w-10 font-mono">${i+1}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyTableBody">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- VIEW 2: PERSONAL CARDS -->
+        <!-- VIEW 3: PERSONAL CARDS -->
         <div id="view-personal" class="hidden space-y-6">
-            <div id="personalCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Dynamic Content Load -->
-            </div>
+            <div id="personalCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <!-- VIEW 3: LEGEND -->
+        <!-- VIEW 4: LEGEND -->
         <div id="view-legend" class="hidden">
             <div class="cream-card rounded-2xl p-6">
                 <h3 class="text-lg font-bold text-accentDark mb-4 flex items-center gap-2">
@@ -175,7 +197,6 @@
     </main>
 
     <script>
-        // 人員與排班完整資料集 (11/01 - 11/30)
         const staffData = [
             { id: "800078", name: "黃美琴", schedule: ["FF","85","85","85","85","85","WW","85","85","85","85","85","WW","85","85","85","85","85","WW","85","85","85","85","85","WW","85","85","85","85","85"] },
             { id: "930216", name: "張邇寧", schedule: ["FF","8-4' L","8-4' L","WW","8-4' L","8-4' L","8-4' L","8-4' L","8-4' L","8-4' L","VV","8-4' L","WW","8-4' L","8-4' L","8-4' L","WW","FF","8-4' L","8-4' L","WW","FF","8-4' L","8-4' L","8-4' L","WW","8-4' L","8-4' L","8-4' L","8-4' L"] },
@@ -196,7 +217,6 @@
             { id: "1150194", name: "李欣容", schedule: ["FF","9'-6 加","9'-6 加","9'-6 (15.16)","9'-6 (15.16)","W+ 9'-6 (15.16)","9-5'","FF","WW","SS調移","WW","WW","WW","8-5","8-5","8-5","10-6' (15.16)","10-6' (15.16)","10-6' (15.16)","10-6' (15.16)","WW","FF","8-5","8-5","8-5","10-6' (15.16)","10-6' (15.16)","WW","FF","8-4' (10.11)"] }
         ];
 
-        // 班別判斷邏輯
         function getShiftCategory(code) {
             if (!code) return 'off';
             if (code.includes('PH') || code.includes('12-8\'')) return 'night';
@@ -205,19 +225,17 @@
             return 'off';
         }
 
-        // 頁籤切換
         function switchTab(tab) {
-            ['daily', 'personal', 'legend'].forEach(t => {
+            ['daily', 'monthly', 'personal', 'legend'].forEach(t => {
                 document.getElementById(`view-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = 'py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2';
+                document.getElementById(`tab-${t}`).className = 'py-2.5 px-4 font-medium text-sm text-stone-500 hover:text-stone-800 border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap';
             });
             document.getElementById(`view-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).className = 'py-2.5 px-4 font-semibold text-sm border-b-2 border-amber-600 text-amber-800 flex items-center gap-2';
+            document.getElementById(`tab-${tab}`).className = 'py-2.5 px-4 font-semibold text-sm border-b-2 border-amber-600 text-amber-800 flex items-center gap-2 whitespace-nowrap';
             
             document.getElementById('dateSelector').style.display = (tab === 'daily') ? 'flex' : 'none';
         }
 
-        // 日期切換
         function changeDate(days) {
             const input = document.getElementById('selectedDate');
             const date = new Date(input.value);
@@ -232,13 +250,12 @@
             }
         }
 
-        // 搜尋
         function handleSearch() {
             renderDailyView();
+            renderMonthlyView();
             renderPersonalView();
         }
 
-        // 渲染每日班表
         function renderDailyView() {
             const dateVal = document.getElementById('selectedDate').value;
             const dayIndex = parseInt(dateVal.split('-')[2]) - 1;
@@ -290,11 +307,30 @@
             }).join('');
         }
 
-        // 渲染個人班表
+        function renderMonthlyView() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const tbody = document.getElementById('monthlyTableBody');
+            const filteredStaff = staffData.filter(s => !query || s.name.toLowerCase().includes(query) || s.id.includes(query));
+
+            tbody.innerHTML = filteredStaff.map(staff => `
+                <tr class="border-b border-cream-200 hover:bg-cream-50 transition">
+                    <td class="p-2.5 font-bold text-accentDark sticky left-0 bg-white z-10 whitespace-nowrap shadow-sm">${staff.name}</td>
+                    <td class="p-2.5 text-stone-500 font-mono">${staff.id}</td>
+                    ${staff.schedule.map(shift => {
+                        const cat = getShiftCategory(shift);
+                        let bg = 'bg-stone-50 text-stone-600';
+                        if (cat === 'day') bg = 'bg-amber-100/70 text-amber-900';
+                        if (cat === 'evening') bg = 'bg-purple-100/70 text-purple-900';
+                        if (cat === 'night') bg = 'bg-indigo-100/70 text-indigo-900';
+                        return `<td class="p-1 text-center border-l border-cream-100"><span class="block px-1 py-1 rounded text-[10px] font-mono ${bg}" title="${shift}">${shift}</span></td>`;
+                    }).join('')}
+                </tr>
+            `).join('');
+        }
+
         function renderPersonalView() {
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
             const container = document.getElementById('personalCardsContainer');
-            
             const filteredStaff = staffData.filter(s => !query || s.name.toLowerCase().includes(query) || s.id.includes(query));
 
             container.innerHTML = filteredStaff.map(staff => `
@@ -310,7 +346,6 @@
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-center text-xs">
                         ${['日','一','二','三','四','五','六'].map(d => `<div class="font-semibold text-stone-400 py-1">${d}</div>`).join('')}
-                        <!-- 11/01 是星期六，補前 6 空格 -->
                         <div></div><div></div><div></div><div></div><div></div>
                         ${staff.schedule.map((shift, idx) => {
                             const cat = getShiftCategory(shift);
@@ -330,9 +365,9 @@
             `).join('');
         }
 
-        // 初始化頁面
         window.onload = () => {
             renderDailyView();
+            renderMonthlyView();
             renderPersonalView();
         };
     </script>
