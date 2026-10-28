@@ -112,12 +112,12 @@
             <div class="cream-card rounded-2xl p-4 overflow-x-auto">
                 <div class="min-w-[1200px]">
                     <div class="text-sm font-bold text-accentDark mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-table text-amber-600"></i> 11511 護理人員 11 月整月班表總覽
+                        <i class="fa-solid fa-table text-amber-600"></i> 11511 護理人員 11 月整月班表總覽（週末假日特別標示）
                     </div>
                     <table class="w-full border-collapse text-xs">
                         <thead>
                             <tr id="monthlyTableHeader" class="bg-cream-100 text-stone-700 border-b border-cream-300">
-                                <!-- Dynamic JS render date 1..30 -->
+                                <!-- Dynamic JS render weekday & date -->
                             </tr>
                         </thead>
                         <tbody id="monthlyTableBody">
@@ -311,24 +311,35 @@
             const tbody = document.getElementById('monthlyTableBody');
             const filteredStaff = staffData.filter(s => !query || s.name.toLowerCase().includes(query) || s.id.includes(query));
 
-            // 生成 1 ~ 30 日標題列
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+            // 產生 1 ~ 30 日標題列（星期與日期）
             let headerHtml = `<th class="p-2.5 text-left sticky left-0 bg-cream-100 z-10 w-24">姓名</th><th class="p-2.5 text-left w-16">職編</th>`;
             for (let i = 1; i <= 30; i++) {
-                headerHtml += `<th class="p-1.5 text-center w-10 font-mono">${i}日</th>`;
+                // 11月1日是星期六 (2025/11/1)
+                const d = new Date(2025, 10, i);
+                const w = d.getDay();
+                const isWeekend = (w === 0 || w === 6);
+                const thBg = isWeekend ? 'bg-amber-100/80 text-amber-900 font-bold' : 'text-stone-700';
+                headerHtml += `<th class="p-1.5 text-center w-11 font-mono ${thBg}"><div class="text-[10px] opacity-70">${weekdays[w]}</div><div>${i}</div></th>`;
             }
             headerRow.innerHTML = headerHtml;
 
-            // 生成每位護理師月班表
+            // 產生每位護理師月班表
             tbody.innerHTML = filteredStaff.map(staff => `
                 <tr class="border-b border-cream-200 hover:bg-cream-50 transition">
                     <td class="p-2.5 font-bold text-accentDark sticky left-0 bg-white z-10 whitespace-nowrap shadow-sm">${staff.name}</td>
                     <td class="p-2.5 text-stone-500 font-mono text-xs">${staff.id}</td>
-                    ${staff.schedule.map(shift => {
+                    ${staff.schedule.map((shift, idx) => {
+                        const d = new Date(2025, 10, idx + 1);
+                        const w = d.getDay();
+                        const isWeekend = (w === 0 || w === 6);
+                        
                         const cat = getShiftCategory(shift);
-                        let bg = 'bg-stone-50 text-stone-600';
-                        if (cat === 'day') bg = 'bg-amber-100/70 text-amber-900';
-                        if (cat === 'evening') bg = 'bg-purple-100/70 text-purple-900';
-                        if (cat === 'night') bg = 'bg-indigo-100/70 text-indigo-900';
+                        let bg = isWeekend ? 'bg-amber-50/70 text-stone-700' : 'bg-stone-50 text-stone-600';
+                        if (cat === 'day') bg = 'bg-amber-200/70 text-amber-900 font-medium';
+                        if (cat === 'evening') bg = 'bg-purple-100/80 text-purple-950 font-medium';
+                        if (cat === 'night') bg = 'bg-indigo-100/80 text-indigo-950 font-medium';
                         return `<td class="p-1 text-center border-l border-cream-100"><span class="block px-1 py-1 rounded text-[10px] font-mono ${bg}" title="${shift}">${shift}</span></td>`;
                     }).join('')}
                 </tr>
@@ -352,11 +363,15 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-center text-xs">
-                        ${['日','一','二','三','四','五','六'].map(d => `<div class="font-semibold text-stone-400 py-1">${d}</div>`).join('')}
+                        ${['日','一','二','三','四','五','六'].map((d, i) => `<div class="font-semibold ${i===0||i===6?'text-amber-700':'text-stone-400'} py-1">${d}</div>`).join('')}
                         <div></div><div></div><div></div><div></div><div></div>
                         ${staff.schedule.map((shift, idx) => {
+                            const d = new Date(2025, 10, idx + 1);
+                            const w = d.getDay();
+                            const isWeekend = (w === 0 || w === 6);
+
                             const cat = getShiftCategory(shift);
-                            let bg = 'bg-stone-100 text-stone-600';
+                            let bg = isWeekend ? 'bg-amber-50 text-stone-600' : 'bg-stone-100 text-stone-600';
                             if (cat === 'day') bg = 'bg-amber-100 text-amber-900 font-medium';
                             if (cat === 'evening') bg = 'bg-purple-100 text-purple-900 font-medium';
                             if (cat === 'night') bg = 'bg-indigo-100 text-indigo-900 font-medium';
